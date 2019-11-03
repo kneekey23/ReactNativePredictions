@@ -1,0 +1,19 @@
+{
+    "dev": {
+        "awscloudformation": {
+            "AuthRoleName": "websummitpredictions-dev-20191103120309-authRole",
+            "UnauthRoleArn": "arn:aws:iam::805580953652:role/websummitpredictions-dev-20191103120309-unauthRole",
+            "AuthRoleArn": "arn:aws:iam::805580953652:role/websummitpredictions-dev-20191103120309-authRole",
+            "Region": "us-west-2",
+            "DeploymentBucketName": "websummitpredictions-dev-20191103120309-deployment",
+            "UnauthRoleName": "websummitpredictions-dev-20191103120309-unauthRole",
+            "StackName": "websummitpredictions-dev-20191103120309",
+            "StackId": "arn:aws:cloudformation:us-west-2:805580953652:stack/websummitpredictions-dev-20191103120309/f60e8940-fe74-11e9-84f8-0a1e344a92a6"
+        },
+        "categories": {
+            "auth": {
+                "websummitpredictions16e8acb7": {}
+            }
+        }
+    }
+}
