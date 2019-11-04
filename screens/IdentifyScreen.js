@@ -7,7 +7,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
-  FlatList
+  FlatList,
+  ActivityIndicator,
+  ActionSheetIOS
 } from 'react-native';
 import * as Permissions from 'expo-permissions';
 import { Camera } from 'expo-camera';
@@ -22,10 +24,12 @@ export default class IdentifyScreen extends React.Component {
     type: Camera.Constants.Type.back,
     image: null,
     resultLabels: [],
-    // resultMessage: ''
+    loading: false,
+    resultMessage: ''
   };
 
   identify = async (fileName) => {
+    this.setState({loading: true})
     let file = fileName.split('ImagePicker/').pop();
     console.log(file)
     const blob = await new Promise((resolve, reject) => {
@@ -60,6 +64,7 @@ export default class IdentifyScreen extends React.Component {
 
           this.setState({ resultLabels: labels });
           this.setState({ resultMessage: "Classification successful!" })
+          this.setState({loading: false})
         })
           .catch(err => {
             console.log('error: ', err)
@@ -98,6 +103,25 @@ export default class IdentifyScreen extends React.Component {
   }
 
   _pickImage = async () => {
+
+    ActionSheetIOS.showActionSheetWithOptions(
+      {
+        options: ['Take Photo', 'Choose Photo', 'Cancel'],
+        cancelButtonIndex: 2,
+      },
+     async buttonIndex => {
+        if (buttonIndex === 0) {
+          await this.snap()
+        }
+        else if (buttonIndex === 1) {
+          await this.chooseImage()
+        }
+      }
+    );
+
+  };
+
+  chooseImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
@@ -110,7 +134,7 @@ export default class IdentifyScreen extends React.Component {
       this.setState({ image: result.uri });
       await this.identify(result.uri)
     }
-  };
+  }
 
   renderSeparator = () => {
     return (
@@ -134,6 +158,7 @@ export default class IdentifyScreen extends React.Component {
     } else {
       return (
         <SafeAreaView style={styles.container}>
+          <ActivityIndicator animating={this.state.loading} size="large" color="#0000ff" />
           <View style={{ padding: 10 }}>
             {image &&
               <View style={styles.photoContainer}>
