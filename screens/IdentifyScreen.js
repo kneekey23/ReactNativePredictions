@@ -1,5 +1,14 @@
 import React from 'react';
-import { Text, View, SafeAreaView, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import {
+  Text,
+  View,
+  SafeAreaView,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+  FlatList
+} from 'react-native';
 import * as Permissions from 'expo-permissions';
 import { Camera } from 'expo-camera';
 import { Predictions, Storage } from 'aws-amplify'
@@ -12,7 +21,8 @@ export default class IdentifyScreen extends React.Component {
     hasCameraPermission: null,
     type: Camera.Constants.Type.back,
     image: null,
-    resultLabels: []
+    resultLabels: [],
+    // resultMessage: ''
   };
 
   identify = async (fileName) => {
@@ -46,6 +56,10 @@ export default class IdentifyScreen extends React.Component {
           }
         }).then(result => {
           console.log('result: ', result)
+          const { labels } = result;
+
+          this.setState({ resultLabels: labels });
+          this.setState({ resultMessage: "Classification successful!" })
         })
           .catch(err => {
             console.log('error: ', err)
@@ -98,6 +112,19 @@ export default class IdentifyScreen extends React.Component {
     }
   };
 
+  renderSeparator = () => {
+    return (
+      <View
+        style={{
+          height: 1,
+          width: '100%',
+          backgroundColor: '#CED0CE',
+          // marginLeft: '14%',
+        }}
+      />
+    );
+  };
+
   render() {
     const { hasCameraPermission, image } = this.state;
     if (hasCameraPermission === null) {
@@ -119,8 +146,26 @@ export default class IdentifyScreen extends React.Component {
               onPress={this._pickImage}>
               <Text style={styles.buttonText}>Pick a Photo</Text>
             </TouchableOpacity>
-
+            <View style={styles.photoContainer}>
+              <Text style={styles.resultText}>{this.state.resultMessage}</Text>
+            </View>
           </View>
+
+          <FlatList
+            data={this.state.resultLabels}
+            keyExtractor={item => item.name}
+            ItemSeparatorComponent={this.renderSeparator}
+            renderItem={({ item }) => (
+              <View style={styles.itemRow}>
+                <View style={styles.itemNameView}>
+                  <Text style={styles.resultText}>{item.name}</Text>
+                </View>
+                <View style={styles.itemConfidenceView}>
+                  <Text style={styles.resultText}>{Math.round(item.metadata.confidence * 100) / 100}</Text>
+                </View>
+              </View>)}
+          />
+
         </SafeAreaView>
       );
     }
@@ -134,8 +179,6 @@ IdentifyScreen.navigationOptions = {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // justifyContent: "center",
-    // alignItems: "center",
   },
   photoButton: {
     marginTop: 10,
@@ -165,5 +208,34 @@ const styles = StyleSheet.create({
   photoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  resultText: {
+    fontSize: 25
+  },
+  itemRow: {
+    padding: 10,
+    height: 50,
+    flexDirection: 'row',  // main axis
+    justifyContent: 'flex-start', // main axis
+    alignItems: 'center', // cross axis
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 18,
+    paddingRight: 16,
+    marginLeft: 14,
+    marginRight: 14,
+    marginTop: 0,
+    marginBottom: 6,
+  },
+  itemNameView: {
+    flex: 1,
+    flexDirection: 'column',
+    fontSize: 25,
+    textAlignVertical: 'center'
+  },
+  itemConfidenceView: {
+    flex: 0,
+    paddingLeft: 16,
+    fontSize: 25
   }
 });
