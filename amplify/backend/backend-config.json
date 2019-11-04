@@ -23,5 +23,11 @@
 			"service": "Comprehend",
 			"interpretType": "interpretText"
 		}
+	},
+	"storage": {
+		"s37a677a1f": {
+			"service": "S3",
+			"providerPlugin": "awscloudformation"
+		}
 	}
 }

@@ -5,9 +5,12 @@ import {
   View,
   SafeAreaView,
   TextInput,
-  Button
+  TouchableOpacity,
+  Dimensions
 } from 'react-native';
 import { Predictions } from 'aws-amplify';
+import { Constants } from 'expo-camera';
+import ExpoConstants from 'expo-constants';
 
 export default class ConvertScreen extends React.Component {
 
@@ -44,18 +47,26 @@ export default class ConvertScreen extends React.Component {
       <SafeAreaView style={styles.container}>
         <View style={{ padding: 10 }}>
           <TextInput
-            style={{ height: 40 }}
-            placeholder="Type here to translate text from english to spanish!"
+            style={styles.textContainer}
+            placeholder="Translate from english to portuguese"
             onChangeText={(text) => this.setState({ text })}
             value={this.state.text}
+            multiline= {true}
           />
-          <Button title="Translate Text" onPress={this.translateText}></Button>
-          <Text style={{ padding: 10, fontSize: 42 }}>
+          <TouchableOpacity 
+          style={styles.translateButton} 
+          underlayColor='#fff' 
+          onPress={this.translateText}>
+            <Text style={styles.buttonText}>Translate Text</Text>
+          </TouchableOpacity>
+          <View style={styles.translationTextView}>
+          <Text style={styles.translationText}>
             {this.state.resultMessage}
           </Text>
-          <Text style={{ padding: 10, fontSize: 42 }}>
+          <Text style={styles.translationText}>
             {this.state.resultTranslation}
           </Text>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -73,19 +84,43 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#00aca857"
 
   },
-  title: {
+  textContainer: {
+    backgroundColor: "white",
+    height: 50,
+    width: Dimensions.get('window').width - 20,
+    borderRadius: 10,
     textAlign: 'center',
-    marginVertical: 8,
+    paddingTop: 15,
+    fontSize: 20
   },
-  fixToText: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  translateButton:{
+    marginRight:40,
+    marginLeft:40,
+   marginTop:10,
+    paddingTop:15,
+    paddingBottom:15,
+    backgroundColor:'#d0037a82',
+    borderRadius:10,
+    borderWidth: 1,
+    borderColor: '#d0037a82'
   },
-  separator: {
-    marginVertical: 8,
-    borderBottomColor: '#737373',
-    borderBottomWidth: StyleSheet.hairlineWidth,
+  buttonText:{
+      color:'#fff',
+      textAlign:'center',
+      paddingLeft : 10,
+      paddingRight : 10,
+      fontSize: 20
   },
+  translationTextView: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 10
+  },
+  translationText: {
+    color: "white",
+    fontSize: 30
+  }
 });
