@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#00aca857"
+    backgroundColor: "#EBFBF8"
 
   },
   textContainer: {
@@ -97,22 +97,20 @@ const styles = StyleSheet.create({
     fontSize: 20
   },
   translateButton:{
-    marginRight:40,
-    marginLeft:40,
    marginTop:10,
-    paddingTop:15,
-    paddingBottom:15,
-    backgroundColor:'#d0037a82',
+    paddingTop:10,
+    paddingBottom:10,
+    backgroundColor:'#7a49a5',
     borderRadius:10,
     borderWidth: 1,
-    borderColor: '#d0037a82'
+    borderColor: '#7a49a5'
   },
   buttonText:{
       color:'#fff',
       textAlign:'center',
       paddingLeft : 10,
       paddingRight : 10,
-      fontSize: 20
+      fontSize: 25
   },
   translationTextView: {
     alignItems: "center",

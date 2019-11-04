@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, Button, SafeAreaView, Image, StyleSheet } from 'react-native';
+import { Text, View, SafeAreaView, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import * as Permissions from 'expo-permissions';
 import { Camera } from 'expo-camera';
 import { Predictions } from 'aws-amplify'
@@ -14,13 +14,13 @@ export default class IdentifyScreen extends React.Component {
     image: null
   };
 
-  identify = async() => {
+  identify = async () => {
     const blob = await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
-      xhr.onload = function() {
+      xhr.onload = function () {
         resolve(xhr.response)
       }
-      xhr.onerror = function(e) {
+      xhr.onerror = function (e) {
         console.log(e)
         reject(new TypeError('Network request failed'))
       }
@@ -91,9 +91,16 @@ export default class IdentifyScreen extends React.Component {
     } else {
       return (
         <SafeAreaView style={styles.container}>
-          <Button title="Take a Photo" onPress={this._pickImage}></Button>
-          {image &&
-          <Image source={{ uri: image }} style={{ width: 300, height: 300 }} />}
+          <View style={{ padding: 10 }}>
+            <TouchableOpacity
+              style={styles.photoButton}
+              underlayColor='#fff'
+              onPress={this._pickImage}>
+              <Text style={styles.buttonText}>Pick a Photo</Text>
+            </TouchableOpacity>
+            {image &&
+              <Image source={{ uri: image }} style={styles.imageStyle} />}
+          </View>
         </SafeAreaView>
       );
     }
@@ -110,4 +117,31 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  photoButton: {
+    marginTop: 10,
+    paddingTop: 10,
+    paddingBottom: 10,
+    backgroundColor: '#BD3BDD',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#BD3BDD',
+    opacity: 1,
+    width: Dimensions.get('window').width - 20,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  buttonText: {
+    color: '#fff',
+    textAlign: 'center',
+    paddingLeft: 10,
+    paddingRight: 10,
+    fontSize: 25
+  },
+  imageStyle: {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').width,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 15
+  }
 });
