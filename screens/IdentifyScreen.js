@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, View, SafeAreaView, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import * as Permissions from 'expo-permissions';
 import { Camera } from 'expo-camera';
-import { Predictions } from 'aws-amplify'
+import { Predictions, Storage } from 'aws-amplify'
 import Constants from 'expo-constants';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -11,10 +11,13 @@ export default class IdentifyScreen extends React.Component {
   state = {
     hasCameraPermission: null,
     type: Camera.Constants.Type.back,
-    image: null
+    image: null,
+    resultLabels: []
   };
 
-  identify = async () => {
+  identify = async (fileName) => {
+    let file = fileName.split('ImagePicker/').pop();
+    console.log(file)
     const blob = await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
       xhr.onload = function () {
@@ -28,19 +31,32 @@ export default class IdentifyScreen extends React.Component {
       xhr.open('GET', this.state.image, true)
       xhr.send(null)
     })
-    Predictions.identify({
-      labels: {
-        source: {
-          file: blob
-        },
-        type: "ALL"
-      }
-    }).then(result => {
-      console.log('result: ', result)
-    })
-      .catch(err => {
-        console.log('error: ', err)
+
+    Storage.put(file, blob)
+      .then(result => {
+        console.log(result)
+
+        //call to predictions if file was put in S3 successfully
+        Predictions.identify({
+          labels: {
+            source: {
+              key: file
+            },
+            type: "ALL"
+          }
+        }).then(result => {
+          console.log('result: ', result)
+        })
+          .catch(err => {
+            console.log('error: ', err)
+          })
+
       })
+      .catch(err => {
+        console.log(err)
+      });
+
+
   }
 
   async componentDidMount() {
@@ -54,7 +70,7 @@ export default class IdentifyScreen extends React.Component {
       let photo = await this.camera.takePictureAsync();
       console.log('photo: ', photo)
       this.setState({ image: photo })
-      await this.identify()
+      await this.identify(photo)
     }
   };
 
@@ -78,7 +94,7 @@ export default class IdentifyScreen extends React.Component {
 
     if (!result.cancelled) {
       this.setState({ image: result.uri });
-      await this.identify()
+      await this.identify(result.uri)
     }
   };
 
@@ -92,14 +108,18 @@ export default class IdentifyScreen extends React.Component {
       return (
         <SafeAreaView style={styles.container}>
           <View style={{ padding: 10 }}>
+            {image &&
+              <View style={styles.photoContainer}>
+                <Image source={{ uri: image }} style={styles.imageStyle} />
+              </View>
+            }
             <TouchableOpacity
               style={styles.photoButton}
               underlayColor='#fff'
               onPress={this._pickImage}>
               <Text style={styles.buttonText}>Pick a Photo</Text>
             </TouchableOpacity>
-            {image &&
-              <Image source={{ uri: image }} style={styles.imageStyle} />}
+
           </View>
         </SafeAreaView>
       );
@@ -114,8 +134,8 @@ IdentifyScreen.navigationOptions = {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    // justifyContent: "center",
+    // alignItems: "center",
   },
   photoButton: {
     marginTop: 10,
@@ -138,10 +158,12 @@ const styles = StyleSheet.create({
     fontSize: 25
   },
   imageStyle: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').width,
+    width: 100,
+    height: 100,
+    paddingTop: 15
+  },
+  photoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 15
   }
 });
