@@ -25,12 +25,20 @@ export default class IdentifyScreen extends React.Component {
     image: null,
     resultLabels: [],
     loading: false,
-    resultMessage: ''
+    resultMessage: '',
+    popCamera: false,
+    fromCamera: false
   };
 
   identify = async (fileName) => {
-    this.setState({loading: true})
-    let file = fileName.split('ImagePicker/').pop();
+    this.setState({ loading: true })
+    var file;
+    if (this.state.fromCamera) {
+      file = fileName.split('Camera/').pop();
+    }else {
+      file = fileName.split('ImagePicker/').pop();
+    } 
+     
     console.log(file)
     const blob = await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
@@ -54,7 +62,7 @@ export default class IdentifyScreen extends React.Component {
         Predictions.identify({
           labels: {
             source: {
-              key: file
+              key: file,
             },
             type: "ALL"
           }
@@ -64,7 +72,7 @@ export default class IdentifyScreen extends React.Component {
 
           this.setState({ resultLabels: labels });
           this.setState({ resultMessage: "Classification successful!" })
-          this.setState({loading: false})
+          this.setState({ loading: false })
         })
           .catch(err => {
             console.log('error: ', err)
@@ -84,14 +92,13 @@ export default class IdentifyScreen extends React.Component {
     this.getPermissionAsync();
   }
 
-  snap = async () => {
-    if (this.camera) {
-      let photo = await this.camera.takePictureAsync();
-      console.log('photo: ', photo)
-      this.setState({ image: photo })
-      await this.identify(photo)
-    }
-  };
+  takePicture = async () => {
+    this.camera.takePictureAsync({ skipProcessing: true }).then(async (data) => {
+      this.setState({ popCamera: false })
+      this.setState({ image: data.uri, fromCamera: true})
+      await this.identify(data.uri)
+    })
+  }
 
   getPermissionAsync = async () => {
     if (Constants.platform.ios) {
@@ -109,9 +116,9 @@ export default class IdentifyScreen extends React.Component {
         options: ['Take Photo', 'Choose Photo', 'Cancel'],
         cancelButtonIndex: 2,
       },
-     async buttonIndex => {
+      async buttonIndex => {
         if (buttonIndex === 0) {
-          await this.snap()
+          this.setState({ popCamera: true })
         }
         else if (buttonIndex === 1) {
           await this.chooseImage()
@@ -150,11 +157,51 @@ export default class IdentifyScreen extends React.Component {
   };
 
   render() {
-    const { hasCameraPermission, image } = this.state;
-    if (hasCameraPermission === null) {
-      return <SafeAreaView />;
-    } else if (hasCameraPermission === false) {
-      return <Text>No access to camera</Text>;
+    const { hasCameraPermission, image, popCamera } = this.state;
+    if (hasCameraPermission && popCamera) {
+      return (
+        <Camera style={{ flex: 1 }} type={this.state.type} ref={ref => {
+          this.camera = ref;
+        }}>
+          <View
+            style={{
+              backgroundColor: 'transparent',
+              flexDirection: 'row',
+              justifyContent:'space-between',
+              width:"50%"
+            }}>
+            <TouchableOpacity
+              style={{
+               //flex: 0.1,
+                alignSelf: 'flex-end',
+                alignItems: 'center',
+              }}
+              onPress={() => {
+                this.setState({
+                  type:
+                    this.state.type === Camera.Constants.Type.back
+                      ? Camera.Constants.Type.front
+                      : Camera.Constants.Type.back,
+                });
+              }}>
+              <Text style={{ fontSize: 18, marginBottom: 10, color: 'white' }}> Flip </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                // flex: 0.1,
+                alignSelf: 'flex-end',
+                alignItems: 'center',
+              }}
+              onPress={() => this.takePicture()}
+            >
+              <Text
+                style={{ fontSize: 18, marginBottom: 10, color: 'white' }}>
+                {' '}Take Picture{' '}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </Camera>
+      )
     } else {
       return (
         <SafeAreaView style={styles.container}>
