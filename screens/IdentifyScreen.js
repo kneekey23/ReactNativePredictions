@@ -165,10 +165,10 @@ export default class IdentifyScreen extends React.Component {
         }}>
           <View
             style={{
-              backgroundColor: 'transparent',
-              flexDirection: 'row',
-              justifyContent:'space-between',
-              width:"50%"
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'row'
             }}>
             <TouchableOpacity
               style={{
